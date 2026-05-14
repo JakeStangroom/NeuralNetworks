@@ -1,0 +1,247 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Neural Networks",
+    "section": "",
+    "text": "Overview\nThese notes introduce the basic understanding of neural networks. We complete our study of supervised learning with these networks by extending the ideas covered in support vector machine framework from the previous section. We continue tackling the same problems which SVMs cover; but, we change the underlying question, not the geometry.\nA neural network represents a highly flexible model which can be used for a variety of problems such as regression and classification. This flexibility comes from a combination of basic units called neurons which are composed of a linear transformation and a nonlinear function on that linear component. Stacking these neurons into layers allows the input to be transformed into a richer feature space for the neural network to model its output from. This is a similar idea to the feature transformation we saw in SVMs which allowed the boundary to be nonlinear in the original predictor space. The difference is: a neural network creates its own feature transformation.\nWe will cover how the neural network architecture is described, how the network learns this feature transformation, and how we can use and evaluate neural networks in R.\nAdditional resources include:\nas well as those provided on Amathuba.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Neural Networks</span>"
+    ]
+  },
+  {
+    "objectID": "index.html#sec-nn-included",
+    "href": "index.html#sec-nn-included",
+    "title": "Neural Networks",
+    "section": "What Is Included",
+    "text": "What Is Included\nThese notes cover:\n\nclassical perceptrons\nneurons\nfeed-forward neural networks\nloss functions\ngradient descent\nbackpropagation\npractical improvements\nimplementation in R\n\nOnce again, the goal is to understand what the machinery is doing and why each addition is needed. Additional mathematics are included in the appendix.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Neural Networks</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html",
+    "href": "01-neurons.html",
+    "title": "2  The Basic Building Block",
+    "section": "",
+    "text": "2.1 Continuing the Linear Story\nAn artificial neural network is built from simple computational units. These units are usually called neurons or nodes. The name comes from a loose biological analogy, relating a neural network to the way one’s mind operates. Admittedly, this makes the notion of a neural network appear extremely complex; however, if we break it down, we start with a linear transformation.\nRecall that a support vector machine is a binary classification model which creates a linear boundary for an associated decision rule. An SVM has a linear score function defined by\n\\[\nf(\\mathbf{x}) = \\mathbf{w}\\cdot\\mathbf{x} + b,\n\\]\nwhere the decision boundary is given by \\(f(\\mathbf{x}) = 0\\). From this boundary, we established the decision rule\n\\[\n\\hat{y} = \\operatorname{sign}(f(\\mathbf{x})).\n\\]\nEstablishing this decision boundary requires the optimisation of \\(\\mathbf{w}\\) and \\(b\\); but what are we optimising for? An SVM approach is\nIt would be naive of us to assume that this is the only logical approach; or the only approach that others have tried before. Enter the perceptron…",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html#continuing-the-linear-story",
+    "href": "01-neurons.html#continuing-the-linear-story",
+    "title": "2  The Basic Building Block",
+    "section": "",
+    "text": "define a margin around the boundary\nmaximise the margin width",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html#the-perceptron",
+    "href": "01-neurons.html#the-perceptron",
+    "title": "2  The Basic Building Block",
+    "section": "2.2 The Perceptron",
+    "text": "2.2 The Perceptron\nLet us continue with the exact same linear score, but let the decision rule be given as\n\\[\n\\hat{y} =\n\\begin{cases}\n1, & f(\\mathbf{x}) \\geq 0,\\\\\n0, & f(\\mathbf{x}) &lt; 0.\n\\end{cases}\n\\]\nWhilst an SVM asks\n\nAmong all separating boundaries, which one leaves the widest margin between the two classes?\n\na classical perceptron asks a much simpler question:\n\nWhat boundary separates the two classes?\n\nWith this simpler question, the optimisation much change accordingly.\nA perceptron updates its parameters whenever it misclassifies an observation, rather than the elaborate primal to dual margin optimisation problem seen in SVMs.\nThe typical way to update these parameters is by iterating through the following steps:\n\n(forward step) compute \\(\\hat{y}_i\\) by using observation \\(\\mathbf{x}_i\\) as an input\n(learning step) update the parameters when the prediction is wrong so that the model is more likely to correctly predict the observation\n\nUsing labels \\(y_i \\in \\{0,1\\}\\), the update can be written as\n\\[\n\\begin{aligned}\n\\mathbf{w}_{\\text{new}}\n&=\n\\mathbf{w}_{\\text{old}}\n+ \\eta (y_i - \\hat{y}_i)\\mathbf{x}_i,\\\\\nb_{\\text{new}}\n&=\nb_{\\text{old}}\n+ \\eta (y_i - \\hat{y}_i).\n\\end{aligned}\n\\]\nIn the above update process, \\(\\eta\\) is known as a learning rate, controlling how much to change the parameters during the update process. It controls the size of each learning step. In practice, \\(\\eta\\) is often chosen as a small positive value.\n\n\n\n\n\n\nNoteIs changing classes really necessary?\n\n\n\n\n\nWe have changed the class labels from the SVM convention \\(y_i \\in \\{-1,+1\\}\\) to the traditional perceptron \\(\\{0, 1\\}\\) labelling used above. The choice for both of these label conventions is driven by mathematical convenience.\nRecall that the SVM convention lets us express correct classification using the compact condition\n\\[\ny_i(\\mathbf{w}\\cdot\\mathbf{x}_i + b) &gt; 0.\n\\]\nThe perceptron can also be written with signed labels. In that case, if an observation is misclassified, the update is\n\\[\n\\mathbf{w}_{\\text{new}}\n=\n\\mathbf{w}_{\\text{old}} + \\eta y_i\\mathbf{x}_i,\n\\qquad\nb_{\\text{new}}\n=\nb_{\\text{old}} + \\eta y_i.\n\\]\nHowever, the most convenient expression of the updating equations uses the \\(\\{0, 1\\}\\) label convention.\n\n\n\nThe perceptron keeps the linear-boundary idea of SVMs, but introduces the training methodology of neural networks: make a prediction, measure the error, and update the weights. Rinse and repeat.\n\n2.2.1 Updating The Iris Boundary\nLet us leverage the Iris data; yet again, for another example. As we did in SVMs, we keep two species so that the example is binary, and use Petal.Width and Petal.Length as predictors.\n\nWhat does the update do?\n\nSuppose that we have the linear decision boundary described by the table below.\n\n\n\n\n\nparameter\nstarting\nupdated\n\n\n\n\nb\n-4.5\n-4.450\n\n\nPetal.Width\n1.0\n1.050\n\n\nPetal.Length\n1.0\n1.165\n\n\n\n\n\nThe starting boundary, shown in Figure 2.1, is not terrible: it already captures the broad separation between the species. It still makes a mistake near the edge of the versicolor class.\n\n\n\n\n\n\n\n\nFigure 2.1: The highlighted observation is misclassified by the current boundary.\n\n\n\n\n\nThe highlighted observation is a versicolor observation. Under the starting boundary, its score is -0.2, so it is just on the wrong side of the line. Since the true class is versicolor but the starting prediction is setosa, the update adds a small multiple of this observation to the parameters using the update equations.\n\n\n\n\n\n\n\n\nFigure 2.2: After an update, the boundary has moved in a direction that helps the highlighted observation.\n\n\n\n\n\nAfter one update, the highlighted observation’s score is 0.44. The update has not solved the whole classification problem; it is not claiming to produce a separating boundary. It has simply moved the boundary so that this particular mistake is less likely to happen again. Depending on the starting boundary and the learning rate, the update step may still classify the highlighted observation wrong. This may seem like a failed or pointless update, but the goal of each update is not to correct the prediction, it is to make it incrementally better.\nThere are no margins or support vectors like SVMs. There is only a boundary that improves when an observation is on the wrong side.\n\n\n2.2.2 A Notational Step Towards Nets\nLet us rewrite the perceptron decision rule as\n\\[\n\\hat{y} = \\sigma(\\mathbf{w}\\cdot\\mathbf{x} + b),\n\\]\nwhere \\(\\sigma\\) is the piecewise classifier function, formally known as the Heaviside function. The function \\(\\sigma\\) is known as an activation function. When we have the perceptron structure with an activation function other than the Heaviside function, we usually call it a node or neuron, rather than the classical perceptron. Later, we will leverage the activation function to make neural networks nonlinear.\n\n\n\n\n\n\n\n\nFigure 2.3: A neuron linearly transforms the input and applies an activation function.\n\n\n\n\n\nFurthermore, \\(z\\) is typically reserved for the linear score such that\n\\[\nz = \\mathbf{w}\\cdot\\mathbf{x} + b.\n\\]\n\n\n2.2.3 What Is Different?\nClearly, the perceptron and the linear SVM are closely related. Both create a hyperplane, defined by\n\\[\n\\mathbf{w}\\cdot\\mathbf{x} + b = 0,\n\\]\nand classify points according to which side they fall on. The important difference is the criterion used to choose that hyperplane.\n\n\n\n\n\n\n\n\nFeature\nClassical perceptron\nLinear SVM\n\n\n\n\nBoundary shape\nLinear hyperplane\nLinear hyperplane\n\n\nMain goal\nFind a separating boundary\nFind a separating boundary with a large margin\n\n\nOptimisation criterion\nMistake-driven updates\nMargin objective\n\n\nTraining signal\nMisclassified observations\nMargin violations and support vectors\n\n\nFinal boundary\nNot unique; depends on order, learning rate, and stopping\nChosen by the margin objective\n\n\n\nThe most important distinction is the margin. If many lines separate the two classes, the perceptron may stop at any one of them. It has no reason to prefer the line with the widest gap around it.\nThe SVM is deliberately more demanding. It does not only want correct classification. It wants correct classification with a buffer. That is why the SVM boundary is tied to support vectors and the margin, aiming for generalised model performance.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html#activation-functions",
+    "href": "01-neurons.html#activation-functions",
+    "title": "2  The Basic Building Block",
+    "section": "2.3 Activation Functions",
+    "text": "2.3 Activation Functions\nThe activation function is where the neuron stops being just a linear score. Let us consider a few activation functions from a perceptron perspective. The Heaviside function is used for binary classification where only the predicted class is the output.\n\n2.3.1 The Sigmoid Activation\nThe natural binary classification extension of\n\nProvide the class label directly\n\nis given by\n\nProvide the probability associated with the class label.\n\nTherefore, we can have the model provide the probability that the observation is class 1, such that the model output is\n\\[\n\\hat{p} = \\mathbb{P}(Y = 1 \\mid X = \\mathbf{x}).\n\\]\nIt could be either class, but the convention is class 1 in binary classification.\nOne would then classify the input based on the probability:\n\\[\n\\hat{y} =\n\\begin{cases}\n1, & \\hat{p} &gt; 0.5,\\\\\n0, & \\hat{p} \\leq 0.5.\n\\end{cases}\n\\]\nTherefore, we want\n\\[\n\\hat{p} = \\sigma(\\mathbf{w}\\cdot\\mathbf{x} + b)\n\\]\nsuch that \\(\\sigma: \\mathbb{R} \\rightarrow (0,1)\\); allowing for a smoother probabilistic output from the model, rather than a sharp transition between the classes. A common function used for this purpose is the sigmoid function defined as\n\\[\n\\sigma(z) = \\frac{1}{1 + e^{-z}}.\n\\]\n\n\n\n\n\n\n\n\nFigure 2.4: The sigmoid function.\n\n\n\n\n\nWhen using a sigmoid activation function, the optimisation of \\(\\mathbf{w}\\) and \\(b\\) is done on the probabilities, not just the classification accuracy. In particular, it is beneficial to define an objective function, usually called a loss function in this context, based on cross-entropy. For observation \\(i\\), the loss or penalty of the model prediction is defined by\n\\[\n\\ell_i(\\mathbf{w}, b)\n=\n-\n\\left[\ny_i \\log(\\hat{p}_i)\n+\n(1-y_i)\\log(1-\\hat{p}_i)\n\\right].\n\\]\nLook familiar? We have set up logistic regression, just from a different perspective.\n\n\n\n\n\n\nNoteA bit rusty?\n\n\n\n\n\nWith a sigmoid activation,\n\\[\n\\hat{p}_i\n=\n\\frac{1}{1 + e^{-z_i}}.\n\\]\nThe sigmoid can be inverted to give\n\\[\n\\log\\left(\\frac{\\hat{p}_i}{1-\\hat{p}_i}\\right)\n=\nz_i\n=\n\\mathbf{w}\\cdot\\mathbf{x}_i + b.\n\\]\nThat is exactly the logistic regression form: the log-odds are a linear function of the predictors.\n\n\n\nEarlier in the course, you may have fitted logistic regression using a method such as IWLS. In the neuron perspective, the optimisation remains based on update steps associated with the prediction loss.\nThere are two useful cases to keep in mind:\n\n\\(y_i = 1\\)\nThen \\(\\ell_i = -\\log(\\hat{p}_i)\\), so the model is penalised more the further the predicted probability is from 1.\n\\(y_i = 0\\)\nThen \\(\\ell_i = -\\log(1-\\hat{p}_i)\\), so the model is penalised more the further the predicted probability is from 0.\n\nBesides the ability to interpret probabilities from the model, the updating step benefits from this loss function because it is differentiable with respect to both \\(\\mathbf{w}\\) and \\(b\\). That means that we can use gradients in our optimisation process. We will return to this idea later on.\n\n\n2.3.2 Keeping It Linear\nWe have seen how to relate a perceptron to SVMs and logistic regression, both models for binary classification. The perceptron idea is not limited to classification problems though. In fact, the most basic activation function can be used for linear regression problems.\nLet the activation function be given by the identity function. Then\n\\[\n\\hat{y}_i = z_i = \\mathbf{w}\\cdot\\mathbf{x}_i + b.\n\\]\nHere, we are explicitly choosing the identity function, but any linear activation would still keep the model linear. Why is this?\nAgain, we need to define a loss function in order to optimise \\(\\mathbf{w}\\) and \\(b\\). It is natural to choose the mean squared error in a regression case:\n\\[\n\\mathcal{L}(\\mathbf{w}, b)\n=\n\\frac{1}{n}\n\\sum_{i=1}^n\n\\left(\ny_i - (\\mathbf{w}\\cdot\\mathbf{x}_i + b)\n\\right)^2.\n\\]\nWhen this is the case, then we have reconstructed linear regression written in neural-network notation.\n\n\n2.3.3 Other Common Activation Functions\nWe have analysed the Heaviside, sigmoid and linear activation functions directly because of their relationship to classical models under a perceptron framework. That is not to say that they are the most important. There is a plethora of activation functions, but Figure 2.5 shows some other common activation functions.\n\n\n\n\n\n\n\n\nFigure 2.5: Common activation functions transform the same linear score in different ways.\n\n\n\n\n\nSmooth or piecewise-linear activations are useful in modern neural networks because they are mostly differentiable. This matters because gradient-based optimisation needs useful local slope information.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html#when-the-perceptron-struggles",
+    "href": "01-neurons.html#when-the-perceptron-struggles",
+    "title": "2  The Basic Building Block",
+    "section": "2.4 When The Perceptron Struggles",
+    "text": "2.4 When The Perceptron Struggles\nThe perceptron learning algorithm has a convergence guarantee only when the classes are linearly separable. If no separating boundary exists, the basic algorithm can keep correcting one point only to break another. The learning rate affects the size of the updates, but separability is the central condition.\nConsider the following problem, known as the XOR problem:\n\n\n\n\n\n\n\n\nFigure 2.6: The two classes are arranged so that no single straight line separates them cleanly.\n\n\n\n\n\nA single perceptron is the wrong shape for this problem. We can keep moving a line around, but the problem itself is not linearly separable.\nThis is the same type of issue that motivated nonlinear SVMs. In the SVM case, we solved it through feature transformations and kernels. The kernel defines a richer similarity or feature space, and the SVM still searches for a margin-based boundary there.\nThe perceptron approach is to combine neurons to induce nonlinear boundaries.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "01-neurons.html#takeaway",
+    "href": "01-neurons.html#takeaway",
+    "title": "2  The Basic Building Block",
+    "section": "2.5 Takeaway",
+    "text": "2.5 Takeaway\nA single neuron does two things:\n\nit performs a linear transformation on the inputs\nit applies an activation function\n\nThe classical perceptron uses this structure to make a binary classification rule. By itself, it creates a linear boundary, just as a linear SVM does. The SVM asks for the widest-margin version of that boundary; yet, the perceptron asks for a boundary that classifies the training data correctly when such a boundary exists.\nChanging the activation and the training criterion connects the same linear score to models we have already seen. A Heaviside activation with mistake-driven updates gives the classical perceptron. A sigmoid activation with cross-entropy gives logistic regression. A linear activation with squared error gives linear regression.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>The Basic Building Block</span>"
+    ]
+  },
+  {
+    "objectID": "02-multilayer-perceptrons.html",
+    "href": "02-multilayer-perceptrons.html",
+    "title": "3  Layering Bricks",
+    "section": "",
+    "text": "3.1 The Multilayer Perceptron\nA single perceptron is limited to one linear boundary with which is can make classifications. This appears to leave us in a similar predicament to when we were isolated to either the hard or soft margin classifier in SVMs; only good for classes that have a linearly separable. Here, we transformed our feature space to induce nonlinear boundaries in the original space, leveraging the kernel trick to make this process efficient. For a perceptron (a neuron more generally), we can use a similar idea to create a nonlinear boundary where we combine multiple neurons into layers. This gives rise to a multilayer perceptron, or MLP.\nConsider the XOR classification problem illustrated by Figure 2.6. The problem is not linearly separable so we need to consider a nonlinear boundary in the \\([x_1, x_2]\\) space. Under the SVM framework, we need to enrich the feature space by considering a linear boundary in the transformed space \\(\\phi(\\mathbf{x})\\). Therefore, \\[\n\\hat{y} = \\begin{cases}\n  1\\qquad \\mathbf{w}\\cdot\\phi(\\mathbf{x}) + b &gt; 0, \\\\\n  0\\qquad \\text{otherwise.}\n\\end{cases}\n\\]\nWe can extend this idea to the perceptron. Instead of the perceptron input considering \\(\\mathbf{x}\\), we can input the transformed predictors \\(\\phi(\\mathbf{x})\\) such that \\[\n\\hat{y} = \\sigma(\\mathbf{w}\\cdot\\phi(\\mathbf{x}) + b).\n\\] The only question that remains: How do we choose \\(\\phi\\)?\nUnder the SVM case, we needed to either manually define \\(\\phi\\) and construct the new feature space, or choose a kernel to incorporate a nonlinear boundary.\nFor the perceptron case, we could manually define \\(\\phi\\), or\nThis is the idea of a multilayer perceptron.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Layering Bricks</span>"
+    ]
+  },
+  {
+    "objectID": "02-multilayer-perceptrons.html#the-multilayer-perceptron",
+    "href": "02-multilayer-perceptrons.html#the-multilayer-perceptron",
+    "title": "3  Layering Bricks",
+    "section": "",
+    "text": "we can have a set of neurons which learn the required transformation automatically.\n\n\n\n3.1.1 The Structure\nA basic MLP, or feed-forward neural network, has the following three components:\n\nan input layer, which holds the predictors\none or more hidden layers, which construct intermediate features\nan output layer, which combines those features into the final prediction\n\n\n\n\n\n\n\n\n\nFigure 3.1: A feedforward neural network sends information forward from inputs, hidden units and outputs.\n\n\n\n\n\nTherefore, a feed-forward neural network is just a combination of neurons. By combining the neurons in layers, and combining multiple layers, we can create a nonlinear structure in the model.\nObviously, we have considered the networks from a binary classification perspective with perceptrons; but, the idea is general for any type of problem.\nThe term hidden simply means that the units are not directly observed as variables in the dataset and are not the final response. They are internal values created by the network to enhance the feature space with the goal of improving model performance. Therefore, in Figure 3.1, the hidden layer maps the original input vector \\(\\mathbf{x}\\) to a vector of hidden layer outputs such that\n\\[\n\\mathbf{x}\n\\mapsto\n\\mathbf{a}^{(1)}\n=\n\\begin{bmatrix}\na_1\\\\\na_2\\\\\n\\vdots\\\\\na_M\n\\end{bmatrix},\n\\] where \\(M\\) is the number of nodes in the hidden layer. For each hidden node \\(a_m\\), we still have a linear transformation defined by \\(\\mathbf{w}_m\\) and \\(b\\). This has the potential to be very notationally tedious. As a result, it is common to create an associated weight matrix and bias vector such that\n\\[\n\\mathbf{z}^{(1)}\n=\nW^{(1)}\\mathbf{x} + \\mathbf{b}^{(1)},\n\\]\nwhere\n\\[\nW^{(1)}\n=\n\\begin{bmatrix}\n- & \\mathbf{w}_1^\\top & - \\\\\n- & \\mathbf{w}_2^\\top & - \\\\\n  & \\vdots &   \\\\\n- & \\mathbf{w}_M^\\top & -\n\\end{bmatrix},\n\\qquad\n\\mathbf{b}^{(1)}\n=\n\\begin{bmatrix}\nb_1\\\\\nb_2\\\\\n\\vdots\\\\\nb_M\n\\end{bmatrix}.\n\\]\nTherefore \\[\\begin{align*}\n\\mathbf{a}^{(1)}\n    & =\\sigma\\left(\\mathbf{z}^{(1)}\\right) \\\\\n& = \\sigma\\left(W^{(1)}\\mathbf{x} + \\mathbf{b}^{(1)}\\right),\n\\end{align*}\\]\nwhere \\(\\sigma\\) is applied component-wise.\n\n\n\n\n\n\nNoteCompacting the notation further\n\n\n\n\n\nIt is common to refine this notation even further. Instead of having separate weight and bias components, we can collapse them into one weight matrix \\(\\mathbf{W}\\). This is done by augmenting each input vector with a leading \\(1\\), similar to the design matrix convention used in linear regression. For a single observation, define\n\\[\n\\mathbf{x}\n=\n\\begin{bmatrix}\n1\\\\\nx_1\\\\\nx_2\\\\\n\\vdots\\\\\nx_p\n\\end{bmatrix}.\n\\]\nThen the layer can be written as\n\\[\n\\mathbf{z}^{(1)}\n=\n\\mathbf{W}^{(1)}\\mathbf{x},\n\\]\nwhere the first column of \\(\\mathbf{W}^{(1)}\\) contains the bias terms.\nWe may adopt this compact notation later on, when notation becomes too tedious; but, for now we will preserve the similarity with the SVM notation.\n\n\n\nThe model output then takes these hidden nodes as the input into a final neuron (possibly multiple depending on the response) such that\n\\[\n\\hat{y} = \\sigma^{\\text{out}}(\\mathbf{W}^{(\\text{out})}\\mathbf{a}^{(1)} + \\mathbf{b}^{(\\text{out})}),\n\\] where we have an output-specific: activation function, weight matrix, and bias vector.\nThe flow described for an observation displays the idea of FFNN;\n\nlearn a feature transformation, then fit the final prediction rule in that learned feature space.\n\nThe idea that remains slightly elusive is that of letting the neural network learn the transformation. This is a powerful feature which We will cover later on.\n\n\n3.1.2 Continuing XOR\nThe XOR example lets us make the feature-map idea concrete. In the SVM view, we would search for, or implicitly choose, a transformation \\(\\phi(\\mathbf{x})\\) so that a linear score separates the classes in the transformed space. In the MLP view, the hidden layer can play the same role.\nFor example, take \\(\\mathbf{x} = [x_1, x_2]^\\top\\) and define a hidden layer with four ReLU units:\n\\[\n\\mathbf{a}^{(1)}\n=\n\\operatorname{ReLU}\\left(W^{(1)}\\mathbf{x} + \\mathbf{b}^{(1)}\\right),\n\\qquad\nW^{(1)}\n=\n\\begin{bmatrix}\n1 & 1\\\\\n-1 & -1\\\\\n1 & -1\\\\\n-1 & 1\n\\end{bmatrix},\n\\qquad\n\\mathbf{b}^{(1)}\n=\n\\begin{bmatrix}\n0\\\\\n0\\\\\n0\\\\\n0\n\\end{bmatrix}.\n\\]\nThis gives the hidden activations\n\\[\n\\begin{aligned}\na_1 &= \\operatorname{ReLU}(x_1 + x_2) = \\max(0, x_1+x_2),\\\\\na_2 &= \\operatorname{ReLU}(-x_1 - x_2) = \\max(0, -x_1-x_2),\\\\\na_3 &= \\operatorname{ReLU}(x_1 - x_2) = \\max(0, x_1-x_2),\\\\\na_4 &= \\operatorname{ReLU}(-x_1 + x_2)= \\max(0, -x_1+x_2).\n\\end{aligned}\n\\]\nThese four values are the transformed features. That is, we can think of a transformed feature space\n\\[\n\\phi(\\mathbf{x})\n=\n\\mathbf{a}^{(1)}\n=\n\\begin{bmatrix}\na_1\\\\\na_2\\\\\na_3\\\\\na_4\n\\end{bmatrix}.\n\\]\nThe output layer can then fit a linear score in this hidden feature space:\n\\[\ns\n=\n\\begin{bmatrix}\n1 & 1 & -1 & -1\n\\end{bmatrix}\n\\mathbf{a}^{(1)}\n+ 0\n=\na_1 + a_2 - a_3 - a_4.\n\\]\nClassifying with a step function on whether \\(s\\) is positive or negative gives a nonlinear boundary in the original \\([x_1, x_2]\\) space. Since \\(a_1+a_2 = |x_1+x_2|\\) and \\(a_3+a_4 = |x_1-x_2|\\), the score is positive when the two inputs have the same sign and negative when they have opposite signs. Therefore, the hidden layer has changed what the predictors are to the output layer, allowing a linear boundary on these hidden nodes.\n\n\n\n\n\n\n\n\nFigure 3.2: The hidden layer builds four transformed features, and the output layer uses a linear score to separate the XOR pattern.\n\n\n\n\n\nNote that, this is still a manual example. It illustrates what an MLP structure can represent, not necessarily how the weights and biases are found. In reality, we fit a neural network whereby: \\(\\mathbf{W}^{(1)}\\), \\(\\mathbf{b}^{(1)}\\), \\(\\mathbf{W}^{(\\text{out})}\\), and \\(\\mathbf{b}^{(\\text{out})}\\) are estimated from data.\n\nThe learning problem is therefore different from the SVM feature-map problem: instead of choosing \\(\\phi\\) before fitting the decision rule, the network tries to learn a useful \\(\\phi\\) while learning the decision rule.\n\n\n3.1.2.1 Learning the feature transformation\nUnlike SVMs, we do not manually choose to introduce the predictors \\(x_1^2\\), \\(x_1x_2\\), or other transformations; in fact, we have little oversight on the transformation function \\(\\phi\\). The network adjusts the hidden-layer weights and biases so that the resulting activations become useful for the prediction task, learning how to represent the inputs which improved the performance of the model. However, this representation depends on many factors such as model size, activation functions, optimisation, starting weights, and the information present in the data.\n\n\n\n3.1.3 Adding More Layers\nOnce we have one hidden layer, adding more layers extends the same idea. The output of one hidden layer becomes the input to the next hidden layer:\n\\[\n\\mathbf{x}\n\\mapsto\n\\mathbf{a}^{(1)}\n\\mapsto\n\\mathbf{a}^{(2)}\n\\mapsto\n\\cdots\n\\mapsto\n\\hat{y}.\n\\]\nThis is why an MLP is not just a collection of unrelated perceptrons. It is a sequence of feature transformations. The first hidden layer constructs features from the original predictors. The next hidden layer constructs features from those features, and so on. Additional layers can make a network more flexible, but they also make optimisation harder. We will return to optimisation as a whole when we discuss gradient descent and backpropagation.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Layering Bricks</span>"
+    ]
+  },
+  {
+    "objectID": "02-multilayer-perceptrons.html#choosing-the-output-layer",
+    "href": "02-multilayer-perceptrons.html#choosing-the-output-layer",
+    "title": "3  Layering Bricks",
+    "section": "3.2 Choosing The Output Layer",
+    "text": "3.2 Choosing The Output Layer\nOnce the hidden layers have created the final representation, the output layer decides how that representation should be interpreted. If we denote the final hidden output as \\(\\mathbf{a}^{(L)}\\), then a single output node starts with the familiar weighted sum\n\\[\nz^{(\\text{out})}\n=\n\\mathbf{W}^{(\\text{out})}\\cdot \\mathbf{a}^{(L)}\n+\nb^{(\\text{out})}.\n\\]\nThe task then determines the output activation. For regression with one numeric response, it is common to use a linear activation:\n\\[\n\\hat{y}\n=\nz^{(\\text{out})}.\n\\]\nIn this case, the output layer is fitting a linear regression model on the learned features \\(\\mathbf{a}^{(L)}\\). The difference from ordinary linear regression is that the features themselves have been created by the hidden layers. This output is usually paired with a squared-error loss.\nFor binary classification, one output unit with a sigmoid activation is common:\n\\[\n\\hat{p}\n=\n\\frac{1}{1 + \\exp\\left(-z^{(\\text{out})}\\right)}.\n\\]\nHere, the output layer is fitting the logistic-regression form on the learned features \\(\\mathbf{a}^{(L)}\\). The sigmoid converts the score into an estimated probability, and the model is usually fitted with binary cross-entropy.\nFor multiclass classification with \\(K\\) classes, we use one output score per class:\n\\[\nz_k^{(\\text{out})}\n=\n\\mathbf{w}_k^{(\\text{out})}\\cdot \\mathbf{a}^{(L)}\n+\nb_k^{(\\text{out})},\n\\qquad\nk = 1,\\ldots,K.\n\\]\nThe softmax activation then converts these scores into class probabilities:\n\\[\n\\hat{p}_k =\n\\frac{\\exp\\left(z_k^{(\\text{out})}\\right)}\n{\\sum_{\\ell=1}^K \\exp\\left(z_\\ell^{(\\text{out})}\\right)}.\n\\]\nThe prediction is the class with the largest estimated probability, and the usual loss is multiclass cross-entropy.\nThe common idea across these cases is that the hidden layers learn the feature space, while the output layer chooses the prediction / decision rule that aims to match the response.\nTherefore, a multilayer perceptron or feed-forward neural network separates the problem into two chronological steps:\n\nhidden layers transform the predictors into a learned feature space\nthe output layer fits the prediction rule in that feature space\n\nThis is why neural networks are often described as flexible function approximators. They are not just fitting one boundary in the original predictor space. They are learning a feature transformation that makes the final prediction easier for the output layer. Each node and each layer combine to learn important features about the original predictors. In fact, this leads us into the main theorem for neural networks.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Layering Bricks</span>"
+    ]
+  },
+  {
+    "objectID": "02-multilayer-perceptrons.html#the-universal-approximation-theorem",
+    "href": "02-multilayer-perceptrons.html#the-universal-approximation-theorem",
+    "title": "3  Layering Bricks",
+    "section": "3.3 The Universal Approximation Theorem",
+    "text": "3.3 The Universal Approximation Theorem\nThe following theorem ensures that a neural network structure can learn. Obviously, there is a very formal statement of this theorem by Hornik (1991), but we will paraphrase.\n\nA neural network with at least one hidden layer and a suitable nonlinear activation function can approximate any continuous function on a closed, bounded domain to an arbitrary preceision, provided that the hidden layer has enough nodes.\n\nSuppose that we have a predictor space \\(\\mathbf{X} \\in \\mathbb{R}^p\\) and an associated response variable \\(\\mathbf{Y}\\). By linking the two, we are essentially assuming that there exists some function\n\\[\nf: K \\rightarrow \\mathbb{R}, \\qquad K \\subset \\mathbb{R}^p \\;\\; \\text{ compact}\n\\] such that\n\\[\nY = f(X) + \\epsilon,\n\\]\nHere, \\(\\epsilon\\) represents the statistical noise.\nThe Universal Approximation Theorem says that a neural network with only one hidden layer can approximate that function \\(f\\) as long as that layer has enough nodes.\nThis links directly to the feature space transformation idea above. The hidden layer builds nonlinear transformations of \\(\\mathbf{x}\\), and the output layer combines these transformed features. By combining enough simple nonlinear units, the network can represent any continuous function which links the predictors and the response.\nThat said, the theorem does not guarantee that a fitted neural network will perform well. It says that a suitable network exists without ensuring that the optimisation will always find such a network. Therefore, the theorem gives us confidence in the flexibility of neural networks, but it does not remove the modelling work. We still need to choose an architecture, fit the weights, tune the model, and check performance on out-of-sample data.\n\nClearly, the next question is: given a model architecture, how the weights are optimised?",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Layering Bricks</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html",
+    "href": "03-gradient-descent.html",
+    "title": "4  Training By Gradient Descent",
+    "section": "",
+    "text": "4.1 Loss Functions\nTraining a neural network means choosing the weights and biases. In a small model, one might hope to solve for the best parameters analytically. In a neural network, this becomes unrealistic very quickly.\nEven a modest network can have many weights. A modern network can have millions or billions. We therefore need an iterative approach.\nThe central idea is:\nA loss function measures how badly the model predicts. The correct loss depends on the problem.\nFor regression, a common choice is squared error:\n\\[\nC(\\mathbf{w}, b) =\n\\frac{1}{2n}\n\\sum_{i=1}^n\n\\left(y_i - \\hat{y}_i\\right)^2.\n\\]\nFor binary classification, a common choice is cross-entropy:\n\\[\nC(\\mathbf{w}, b) =\n-\\frac{1}{n}\n\\sum_{i=1}^n\n\\left[\ny_i\\log(\\hat{p}_i)\n+ (1-y_i)\\log(1-\\hat{p}_i)\n\\right].\n\\]\nThe loss is the quantity the training algorithm tries to minimise.\nThese choices connect back to the single-neuron examples. A linear output unit trained with squared error is linear regression. A sigmoid output unit trained with cross-entropy is logistic regression. A threshold perceptron does not fit either of these smooth losses in its basic form; it uses a direct mistake-correction rule instead.\nThis is also the cleanest way to compare the perceptron with the SVM. Both use a linear score and a sign decision, but they optimise different criteria. The perceptron reacts to mistakes. The SVM searches for a boundary with a margin.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#a-one-weight-example",
+    "href": "03-gradient-descent.html#a-one-weight-example",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.2 A One-Weight Example",
+    "text": "4.2 A One-Weight Example\nLet us begin with the smallest possible regression example. Suppose the true relationship is\n\\[\ny = 0 + 2x.\n\\]\nThe data are:\n\n\nShow simple data code\ndat &lt;- linear_example_data()\nknitr::kable(dat)\n\n\n\n\n\nx\ny\n\n\n\n\n0\n0\n\n\n1\n2\n\n\n2\n4\n\n\n3\n6\n\n\n\n\n\nNow suppose we fix \\(b = 0\\) and try different values of \\(w_1\\) in\n\\[\n\\hat{y} = b + w_1x.\n\\]\n\n\nShow candidate cost code\ncandidate_w1 &lt;- c(0, 0.5, 1, 2, 2.5)\ncost_table &lt;- data.frame(\n  w1 = candidate_w1,\n  cost = vapply(candidate_w1, function(v) linear_cost(0, v), numeric(1))\n)\nknitr::kable(cost_table)\n\n\n\n\n\nw1\ncost\n\n\n\n\n0.0\n7.0000\n\n\n0.5\n3.9375\n\n\n1.0\n1.7500\n\n\n2.0\n0.0000\n\n\n2.5\n0.4375\n\n\n\n\n\nThe loss is smallest when \\(w_1 = 2\\), as expected.\n\n\n\n\n\n\n\n\nFigure 4.1: The cost curve shows which slope weight gives the smallest prediction error.\n\n\n\n\n\nThis is the easiest version of training. We can see the whole cost curve and identify the best weight by inspection. Neural networks are too large for this visual inspection, but the idea remains the same.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#the-gradient-descent-update",
+    "href": "03-gradient-descent.html#the-gradient-descent-update",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.3 The Gradient Descent Update",
+    "text": "4.3 The Gradient Descent Update\nGradient descent updates each weight using the slope of the loss function:\n\\[\nw_j \\leftarrow\nw_j -\n\\eta\n\\frac{\\partial C(\\mathbf{w}, b)}{\\partial w_j}.\n\\]\nHere \\(\\eta\\) is the learning rate. The bias \\(b\\) is updated in the same way, using its own derivative.\nThe partial derivative tells us the direction of steepest local increase in the loss. The minus sign means we move in the opposite direction, toward lower loss.\nThe learning rate determines the size of the step:\n\nif \\(\\eta\\) is too small, learning can be painfully slow\nif \\(\\eta\\) is too large, the algorithm can overshoot and fail to settle\n\n\n\n\n\n\n\n\n\nFigure 4.2: Different learning rates can lead to slow, reasonable, or unstable movement across the same cost curve.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#more-than-one-parameter",
+    "href": "03-gradient-descent.html#more-than-one-parameter",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.4 More Than One Parameter",
+    "text": "4.4 More Than One Parameter\nWith two parameters, the loss is a surface rather than a curve. The same idea still applies. Gradient descent moves across this surface towards smaller loss.\n\n\n\n\n\n\n\n\nFigure 4.3: A contour plot shows the cost surface when both the intercept and slope can change.\n\n\n\n\n\nIn a neural network, the surface exists in a high-dimensional parameter space. We cannot draw it, but gradient descent still uses local slope information to decide how to move.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#batch-stochastic-and-mini-batch-learning",
+    "href": "03-gradient-descent.html#batch-stochastic-and-mini-batch-learning",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.5 Batch, Stochastic, And Mini-Batch Learning",
+    "text": "4.5 Batch, Stochastic, And Mini-Batch Learning\nThere are several ways to compute the gradient.\nBatch gradient descent computes the gradient using all training observations before updating the parameters. This is stable, but can be slow for large datasets.\nStochastic gradient descent updates the parameters after one training observation. This is faster per update and can work well at scale, but the updates are noisy.\nMini-batch gradient descent is a compromise. It computes the gradient on a small batch of observations, such as 32, 64, or 128 observations, then updates the parameters.\nThe modern default is usually mini-batch learning.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#input-preprocessing",
+    "href": "03-gradient-descent.html#input-preprocessing",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.6 Input Preprocessing",
+    "text": "4.6 Input Preprocessing\nGradient descent is sensitive to the scale of the predictors. If one predictor is measured in thousands and another in decimals, the corresponding weights can learn at very different rates.\nFor this reason, neural-network predictors are usually standardised:\n\\[\nx_{ij}^{std}\n=\n\\frac{x_{ij} - \\bar{x}_j}{s_j}.\n\\]\nThat is, each input variable is centred at zero and scaled to have standard deviation one.\n\n\n\n\n\n\nNoteA small warning about preprocessing\n\n\n\n\n\nThe standardisation parameters must be estimated from the training data only. The same training means and standard deviations are then applied to the validation and test data.\nIf the validation or test data influence the scaling parameters, information leaks from held-out data into the training process.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "03-gradient-descent.html#takeaway",
+    "href": "03-gradient-descent.html#takeaway",
+    "title": "4  Training By Gradient Descent",
+    "section": "4.7 Takeaway",
+    "text": "4.7 Takeaway\nTraining a neural network requires three separate choices:\n\nthe loss function defines what counts as a bad prediction\nthe optimiser defines how the parameters are moved\nthe learning rate controls the size of those moves\n\nGradient descent is the basic optimisation idea. Backpropagation is the efficient way to compute the gradients needed by gradient descent in a multilayer network.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Training By Gradient Descent</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-math.html",
+    "href": "appendix-math.html",
+    "title": "Appendix A — Some Mathematical Support",
+    "section": "",
+    "text": "A.1 Matrix Notation For One Layer\nThis appendix collects short explanations of mathematical ideas that support the neural-network material.\nFor one observation, a layer can be written as\n\\[\n\\mathbf{z}^{(k+1)}\n=\nW^{(k)}\\mathbf{a}^{(k)}\n+\n\\mathbf{b}^{(k)}.\n\\]\nHere:\nThe activation is then\n\\[\n\\mathbf{a}^{(k+1)}\n=\n\\phi\\left(\\mathbf{z}^{(k+1)}\\right),\n\\]\nwhere \\(\\phi\\) is applied elementwise.\nFor the input layer,\n\\[\n\\mathbf{a}^{(0)} = \\mathbf{x}.\n\\]",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Some Mathematical Support</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-math.html#matrix-notation-for-one-layer",
+    "href": "appendix-math.html#matrix-notation-for-one-layer",
+    "title": "Appendix A — Some Mathematical Support",
+    "section": "",
+    "text": "\\(\\mathbf{a}^{(k)}\\) is the activation vector from layer \\(k\\)\n\\(W^{(k)}\\) is the weight matrix mapping layer \\(k\\) to layer \\(k+1\\)\n\\(\\mathbf{b}^{(k)}\\) is the bias vector\n\\(\\mathbf{z}^{(k+1)}\\) is the vector of pre-activation scores",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Some Mathematical Support</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-math.html#activation-function-formulas",
+    "href": "appendix-math.html#activation-function-formulas",
+    "title": "Appendix A — Some Mathematical Support",
+    "section": "A.2 Activation Function Formulas",
+    "text": "A.2 Activation Function Formulas\nThe sigmoid function is\n\\[\n\\sigma(z) = \\frac{1}{1 + \\exp(-z)}.\n\\]\nIts derivative is\n\\[\n\\sigma'(z) = \\sigma(z)(1-\\sigma(z)).\n\\]\nThe hyperbolic tangent function is\n\\[\n\\tanh(z)\n=\n\\frac{\\exp(z) - \\exp(-z)}\n{\\exp(z) + \\exp(-z)}.\n\\]\nThe ReLU function is\n\\[\n\\operatorname{ReLU}(z) = \\max(0,z).\n\\]\nIts derivative is\n\\[\n\\operatorname{ReLU}'(z) =\n\\begin{cases}\n0, & z &lt; 0,\\\\\n1, & z &gt; 0.\n\\end{cases}\n\\]\nIt is not differentiable at \\(z=0\\). In practice, software handles this with a convention or subgradient.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Some Mathematical Support</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-math.html#a-backpropagation-derivative",
+    "href": "appendix-math.html#a-backpropagation-derivative",
+    "title": "Appendix A — Some Mathematical Support",
+    "section": "A.3 A Backpropagation Derivative",
+    "text": "A.3 A Backpropagation Derivative\nConsider a one-hidden-layer regression network:\n\\[\nz_m^{(1)}\n=\n\\mathbf{w}_m^{(1)}\\cdot\\mathbf{x} + b_m^{(1)},\n\\]\n\\[\na_m^{(1)} = \\phi(z_m^{(1)}),\n\\]\nand\n\\[\n\\hat{y}\n=\n\\mathbf{w}^{(2)}\\cdot\\mathbf{a}^{(1)} + b^{(2)}.\n\\]\nThe squared-error loss for one observation is\n\\[\nC = \\frac{1}{2}(y-\\hat{y})^2.\n\\]\nFor an output-layer weight,\n\\[\n\\frac{\\partial C}{\\partial w_m^{(2)}}\n=\n\\frac{\\partial C}{\\partial \\hat{y}}\n\\frac{\\partial \\hat{y}}{\\partial w_m^{(2)}}.\n\\]\nSince\n\\[\n\\frac{\\partial C}{\\partial \\hat{y}}\n=\n\\hat{y}-y\n\\]\nand\n\\[\n\\frac{\\partial \\hat{y}}{\\partial w_m^{(2)}}\n=\na_m^{(1)},\n\\]\nwe get\n\\[\n\\frac{\\partial C}{\\partial w_m^{(2)}}\n=\n(\\hat{y}-y)a_m^{(1)}.\n\\]\nFor a hidden-layer weight,\n\\[\n\\frac{\\partial C}{\\partial w_{jm}^{(1)}}\n=\n\\frac{\\partial C}{\\partial \\hat{y}}\n\\frac{\\partial \\hat{y}}{\\partial a_m^{(1)}}\n\\frac{\\partial a_m^{(1)}}{\\partial z_m^{(1)}}\n\\frac{\\partial z_m^{(1)}}{\\partial w_{jm}^{(1)}}.\n\\]\nThe four pieces are:\n\\[\n\\frac{\\partial C}{\\partial \\hat{y}}\n=\n\\hat{y}-y,\n\\]\n\\[\n\\frac{\\partial \\hat{y}}{\\partial a_m^{(1)}}\n=\nw_m^{(2)},\n\\]\n\\[\n\\frac{\\partial a_m^{(1)}}{\\partial z_m^{(1)}}\n=\n\\phi'(z_m^{(1)}),\n\\]\nand\n\\[\n\\frac{\\partial z_m^{(1)}}{\\partial w_{jm}^{(1)}}\n=\nx_j.\n\\]\nTherefore,\n\\[\n\\frac{\\partial C}{\\partial w_{jm}^{(1)}}\n=\n(\\hat{y}-y)\nw_m^{(2)}\n\\phi'(z_m^{(1)})\nx_j.\n\\]\nThis is the basic hidden-layer backpropagation update for the one-output regression case.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Some Mathematical Support</span>"
+    ]
+  },
+  {
+    "objectID": "appendix-math.html#softmax-and-cross-entropy",
+    "href": "appendix-math.html#softmax-and-cross-entropy",
+    "title": "Appendix A — Some Mathematical Support",
+    "section": "A.4 Softmax And Cross-Entropy",
+    "text": "A.4 Softmax And Cross-Entropy\nFor multiclass classification, the softmax output for class \\(k\\) is\n\\[\n\\hat{p}_k\n=\n\\frac{\\exp(z_k)}\n{\\sum_{\\ell=1}^K \\exp(z_\\ell)}.\n\\]\nIf \\(y_k\\) is an indicator for whether the observation belongs to class \\(k\\), the cross-entropy loss is\n\\[\nC\n=\n-\n\\sum_{k=1}^K\ny_k \\log(\\hat{p}_k).\n\\]\nThis loss rewards high predicted probability for the correct class.",
+    "crumbs": [
+      "Appendices",
+      "<span class='chapter-number'>A</span>  <span class='chapter-title'>Some Mathematical Support</span>"
+    ]
+  }
+]
