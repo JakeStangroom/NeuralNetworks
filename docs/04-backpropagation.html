@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>3&nbsp; Layering Bricks – Introduction to Neural Networks</title>
+<title>5&nbsp; Backpropagation – Introduction to Neural Networks</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -33,8 +33,8 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./03-gradient-descent.html" rel="next">
-<link href="./01-neurons.html" rel="prev">
+<link href="./05-regularisation.html" rel="next">
+<link href="./03-gradient-descent.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -280,7 +280,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./02-multilayer-perceptrons.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Layering Bricks</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./04-backpropagation.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Backpropagation</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -322,7 +322,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./02-multilayer-perceptrons.html" class="sidebar-item-text sidebar-link active">
+  <a href="./02-multilayer-perceptrons.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Layering Bricks</span></span></a>
   </div>
 </li>
@@ -334,7 +334,7 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./04-backpropagation.html" class="sidebar-item-text sidebar-link">
+  <a href="./04-backpropagation.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Backpropagation</span></span></a>
   </div>
 </li>
@@ -371,14 +371,12 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-multilayer-perceptron" id="toc-the-multilayer-perceptron" class="nav-link active" data-scroll-target="#the-multilayer-perceptron"><span class="header-section-number">3.1</span> The Multilayer Perceptron</a>
+  <li><a href="#how-does-backpropagation-work" id="toc-how-does-backpropagation-work" class="nav-link active" data-scroll-target="#how-does-backpropagation-work"><span class="header-section-number">5.1</span> How Does Backpropagation Work?</a>
   <ul class="collapse">
-  <li><a href="#the-structure" id="toc-the-structure" class="nav-link" data-scroll-target="#the-structure"><span class="header-section-number">3.1.1</span> The Structure</a></li>
-  <li><a href="#continuing-xor" id="toc-continuing-xor" class="nav-link" data-scroll-target="#continuing-xor"><span class="header-section-number">3.1.2</span> Continuing XOR</a></li>
-  <li><a href="#adding-more-layers" id="toc-adding-more-layers" class="nav-link" data-scroll-target="#adding-more-layers"><span class="header-section-number">3.1.3</span> Adding More Layers</a></li>
+  <li><a href="#output-layer" id="toc-output-layer" class="nav-link" data-scroll-target="#output-layer"><span class="header-section-number">5.1.1</span> Output Layer</a></li>
+  <li><a href="#hidden-layer-weights" id="toc-hidden-layer-weights" class="nav-link" data-scroll-target="#hidden-layer-weights"><span class="header-section-number">5.1.2</span> Hidden Layer Weights</a></li>
+  <li><a href="#general-backpropagation" id="toc-general-backpropagation" class="nav-link" data-scroll-target="#general-backpropagation"><span class="header-section-number">5.1.3</span> General Backpropagation</a></li>
   </ul></li>
-  <li><a href="#choosing-the-output-layer" id="toc-choosing-the-output-layer" class="nav-link" data-scroll-target="#choosing-the-output-layer"><span class="header-section-number">3.2</span> Choosing The Output Layer</a></li>
-  <li><a href="#the-universal-approximation-theorem" id="toc-the-universal-approximation-theorem" class="nav-link" data-scroll-target="#the-universal-approximation-theorem"><span class="header-section-number">3.3</span> The Universal Approximation Theorem</a></li>
   </ul>
 </nav>
     </div>
@@ -388,7 +386,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Layering Bricks</span></h1>
+<h1 class="title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Backpropagation</span></h1>
 </div>
 
 
@@ -405,310 +403,150 @@ window.Quarto = {
 </header>
 
 
-<p>A single perceptron is limited to one linear boundary with which is can make classifications. This appears to leave us in a similar predicament to when we were isolated to either the hard or soft margin classifier in SVMs; only good for classes that have a linearly separable. Here, we transformed our feature space to induce nonlinear boundaries in the original space, leveraging the kernel trick to make this process efficient. For a perceptron (a neuron more generally), we can use a similar idea to create a nonlinear boundary where we combine multiple neurons into layers. This gives rise to a <strong>multilayer perceptron</strong>, or MLP.</p>
-<section id="the-multilayer-perceptron" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="the-multilayer-perceptron"><span class="header-section-number">3.1</span> The Multilayer Perceptron</h2>
-<p>Consider the <em>XOR</em> classification problem illustrated by <a href="01-neurons.html#fig-xorProblem" class="quarto-xref">Figure&nbsp;<span>2.6</span></a>. The problem is not linearly separable so we need to consider a nonlinear boundary in the <span class="math inline">\([x_1, x_2]\)</span> space. Under the SVM framework, we need to enrich the feature space by considering a linear boundary in the transformed space <span class="math inline">\(\phi(\mathbf{x})\)</span>. Therefore, <span class="math display">\[
-\hat{y} = \begin{cases}
-  1\qquad \mathbf{w}\cdot\phi(\mathbf{x}) + b &gt; 0, \\
-  0\qquad \text{otherwise.}
-\end{cases}
-\]</span></p>
-<p>We can extend this idea to the perceptron. Instead of the perceptron input considering <span class="math inline">\(\mathbf{x}\)</span>, we can input the transformed predictors <span class="math inline">\(\phi(\mathbf{x})\)</span> such that <span class="math display">\[
-\hat{y} = \sigma(\mathbf{w}\cdot\phi(\mathbf{x}) + b).
-\]</span> The only question that remains: <em>How do we choose <span class="math inline">\(\phi\)</span>?</em></p>
-<p>Under the SVM case, we needed to either manually define <span class="math inline">\(\phi\)</span> and construct the new feature space, or choose a kernel to incorporate a nonlinear boundary.</p>
-<p>For the perceptron case, we <em>could</em> manually define <span class="math inline">\(\phi\)</span>, or</p>
-<blockquote class="blockquote">
-<p>we can have a set of neurons which learn the required transformation automatically.</p>
-</blockquote>
-<p><em>This is the idea of a multilayer perceptron.</em></p>
-<section id="the-structure" class="level3" data-number="3.1.1">
-<h3 data-number="3.1.1" class="anchored" data-anchor-id="the-structure"><span class="header-section-number">3.1.1</span> The Structure</h3>
-<p>A basic MLP, or <em>feed-forward neural network</em>, has the following three components:</p>
+<p>In our gradient descent example from the previous chapter, we saw that under a trivial network, we can analytically compute the derivative of the loss functions with respect to the model parameters. This was great for the concept; but, what happens when we move beyond a single neuron? When we have an MLP or basic FFNN structure, relating weights to the loss function through all of the layers seems like a daunting task. <em>Backpropagation</em> is the key. It is an efficient way to compute the gradients needed by gradient descent.</p>
+<p>Recall that throughout all of our optimisation, we have broken the task up into two steps.</p>
+<p>The network first moves <em>forward</em>:</p>
 <ol type="1">
-<li>an input layer, which holds the predictors</li>
-<li>one or more hidden layers, which construct intermediate features</li>
-<li>an output layer, which combines those features into the final prediction</li>
+<li>inputs enter the network</li>
+<li>hidden units compute activations</li>
+<li>the output layer produces a prediction</li>
+<li>the loss measures the error</li>
 </ol>
+<p>The update step moves <em>backward</em>:</p>
+<ol type="1">
+<li>the output error is computed</li>
+<li>gradients are computed for the output-layer weights</li>
+<li>hidden units receive information about how much they contributed to the error</li>
+<li>gradients are computed for the hidden-layer weights</li>
+</ol>
+<p>After these gradients have been computed, the optimiser updates the weights and biases. This distinction is important: backpropagation computes the derivatives; gradient descent, uses those derivatives to adjust and update these parameters.</p>
 <div class="cell">
 <div class="cell-output-display">
-<div id="fig-nnArch" class="quarto-float quarto-figure quarto-figure-center anchored">
+<div id="fig-backprop-flow" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-nnArch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="02-multilayer-perceptrons_files/figure-html/fig-nnArch-1.png" class="img-fluid figure-img" width="672">
+<div aria-describedby="fig-backprop-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="04-backpropagation_files/figure-html/fig-backprop-flow-1.png" class="img-fluid figure-img" width="672">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-nnArch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3.1: A feedforward neural network sends information forward from inputs, hidden units and outputs.
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-backprop-flow-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5.1: Forward propagation computes predictions; backpropagation sends gradient information back through the network.
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Therefore, a feed-forward neural network is just a combination of neurons. By combining the neurons in layers, and combining multiple layers, we can create a nonlinear structure in the model.</p>
-<p>Obviously, we have considered the networks from a binary classification perspective with perceptrons; but, the idea is general for any type of problem.</p>
-<p>The term <strong>hidden</strong> simply means that the units are not directly observed as variables in the dataset and are not the final response. They are internal values created by the network to enhance the feature space with the goal of improving model performance. Therefore, in <a href="#fig-nnArch" class="quarto-xref">Figure&nbsp;<span>3.1</span></a>, the hidden layer maps the original input vector <span class="math inline">\(\mathbf{x}\)</span> to a vector of hidden layer outputs such that</p>
+<section id="how-does-backpropagation-work" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="how-does-backpropagation-work"><span class="header-section-number">5.1</span> How Does Backpropagation Work?</h2>
+<p>Consider a regression network with one hidden layer. For observation <span class="math inline">\(i\)</span>, let</p>
 <p><span class="math display">\[
-\mathbf{x}
-\mapsto
-\mathbf{a}^{(1)}
+z_m^{(1)}
 =
-\begin{bmatrix}
-a_1\\
-a_2\\
-\vdots\\
-a_M
-\end{bmatrix},
-\]</span> where <span class="math inline">\(M\)</span> is the number of nodes in the hidden layer. For each hidden node <span class="math inline">\(a_m\)</span>, we still have a linear transformation defined by <span class="math inline">\(\mathbf{w}_m\)</span> and <span class="math inline">\(b\)</span>. This has the potential to be <em>very</em> notationally tedious. As a result, it is common to create an associated weight matrix and bias vector such that</p>
-<p><span class="math display">\[
-\mathbf{z}^{(1)}
-=
-W^{(1)}\mathbf{x} + \mathbf{b}^{(1)},
+\mathbf{w}_m^{(1)}\cdot\mathbf{x}_i + b_m^{(1)}
 \]</span></p>
-<p>where</p>
+<p>be the linear score for hidden unit <span class="math inline">\(m\)</span>. Therefore the hidden unit <span class="math inline">\(a_m^{(1)}\)</span> is defined by the activation function such that</p>
 <p><span class="math display">\[
-W^{(1)}
-=
-\begin{bmatrix}
-- &amp; \mathbf{w}_1^\top &amp; - \\
-- &amp; \mathbf{w}_2^\top &amp; - \\
-  &amp; \vdots &amp;   \\
-- &amp; \mathbf{w}_M^\top &amp; -
-\end{bmatrix},
-\qquad
-\mathbf{b}^{(1)}
-=
-\begin{bmatrix}
-b_1\\
-b_2\\
-\vdots\\
-b_M
-\end{bmatrix}.
+a_m^{(1)} = \sigma(z_m^{(1)}).
 \]</span></p>
-<p>Therefore <span class="math display">\[\begin{align*}
-\mathbf{a}^{(1)}
-    &amp; =\sigma\left(\mathbf{z}^{(1)}\right) \\
-&amp; = \sigma\left(W^{(1)}\mathbf{x} + \mathbf{b}^{(1)}\right),
-\end{align*}\]</span></p>
-<p>where <span class="math inline">\(\sigma\)</span> is applied component-wise.</p>
+<p>The output score is</p>
+<p><span class="math display">\[
+\hat{y}_i
+=
+\mathbf{w}^{(2)}\cdot\mathbf{a}^{(1)} + b^{(2)}.
+\]</span></p>
+<p>For the standard (half) squared-error loss function,</p>
+<p><span class="math display">\[
+\mathcal{L}_i =
+\frac{1}{2}
+\left(y_i - \hat{y}_i\right)^2.
+\]</span></p>
+<p>The goal is to compute derivatives of <span class="math inline">\(\mathcal{L}_i\)</span> with respect to every weight and bias in the model. The reason we say that this occurs backwards is because we will leverage the <em>chain rule.</em></p>
+<section id="output-layer" class="level3" data-number="5.1.1">
+<h3 data-number="5.1.1" class="anchored" data-anchor-id="output-layer"><span class="header-section-number">5.1.1</span> Output Layer</h3>
+<p>The output layer derivative for the regression case is extremely clean. To see this, note that</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal{L}_i}{\partial w_{m}^{(2)}}
+=
+\frac{\partial \mathcal{L}_i}{\partial \hat{y}_i}
+\frac{\partial \hat{y}_i}{\partial a_m^{(1)}}
+\frac{\partial a_m^{(1)}}{\partial w_{m}^{(2)} }
+\]</span></p>
+<p>All three of these partial derivatives should be trivial. Therefore, for a hidden activation <span class="math inline">\(a_m^{(1)}\)</span>,</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal{L}_i}{\partial w_m^{(2)}}
+=
+(\hat{y}_i - y_i)a_m^{(1)}.
+\]</span></p>
+<p>This says that the gradient depends on:</p>
+<ul>
+<li>the prediction error, <span class="math inline">\(\hat{y}_i - y_i\)</span></li>
+<li>the activation being fed into that output weight</li>
+</ul>
+<p>If the prediction is already correct, this derivative is small. If the error is large, the corresponding output weights receive larger gradients, and the optimiser can make larger updates.</p>
+</section>
+<section id="hidden-layer-weights" class="level3" data-number="5.1.2">
+<h3 data-number="5.1.2" class="anchored" data-anchor-id="hidden-layer-weights"><span class="header-section-number">5.1.2</span> Hidden Layer Weights</h3>
+<p>Hidden layer weights are less direct; but, we can continue the idea of sending gradient information backwards through the model with the chain rule. Remember that hidden weight affects the hidden activation, which affects the output, which affects the loss.</p>
+<p>Therefore, when we leverage the chain rule, we have the following:</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal{L}_i}{\partial w_{jm}^{(1)}}
+=
+\frac{\partial \mathcal{L}_i}{\partial \hat{y}_i}
+\frac{\partial \hat{y}_i}{\partial a_m^{(1)}}
+\frac{\partial a_m^{(1)}}{\partial z_m^{(1)}}
+\frac{\partial z_m^{(1)}}{\partial w_{jm}^{(1)}}.
+\]</span></p>
+<p>Each factor has a clear role:</p>
+<ul>
+<li>output error</li>
+<li>connection from hidden unit to output</li>
+<li>derivative of the activation function</li>
+<li>input value attached to the hidden weight</li>
+</ul>
+<p>For squared-error regression, this becomes</p>
+<p><span class="math display">\[
+\frac{\partial \mathcal{L}_i}{\partial w_{jm}^{(1)}}
+=
+(\hat{y}_i - y_i)
+w_m^{(2)}
+\sigma'(z_m^{(1)})
+x_{ij}.
+\]</span></p>
+<p>This is the essence of backpropagation. The output error is passed backward through the network, scaled by the weights and activation derivatives it passes through.</p>
 <div class="callout callout-style-simple callout-note no-icon callout-titled">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon no-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Compacting the notation further
+<span class="screen-reader-only">Note</span>A little more about the chain rule
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>It is common to refine this notation even further. Instead of having separate weight and bias components, we can collapse them into one weight matrix <span class="math inline">\(\mathbf{W}\)</span>. This is done by augmenting each input vector with a leading <span class="math inline">\(1\)</span>, similar to the design matrix convention used in linear regression. For a single observation, define</p>
+<p>The hidden-layer derivative looks complicated because the hidden weight does not affect the loss directly. It affects the loss through a path:</p>
 <p><span class="math display">\[
-\mathbf{x}
-=
-\begin{bmatrix}
-1\\
-x_1\\
-x_2\\
-\vdots\\
-x_p
-\end{bmatrix}.
-\]</span></p>
-<p>Then the layer can be written as</p>
-<p><span class="math display">\[
-\mathbf{z}^{(1)}
-=
-\mathbf{W}^{(1)}\mathbf{x},
-\]</span></p>
-<p>where the first column of <span class="math inline">\(\mathbf{W}^{(1)}\)</span> contains the bias terms.</p>
-<p><em>We may adopt this compact notation later on, when notation becomes too tedious; but, for now we will preserve the similarity with the SVM notation.</em></p>
-</div>
-</div>
-</div>
-<p>The model output then takes these hidden nodes as the input into a final neuron (possibly multiple depending on the response) such that</p>
-<p><span class="math display">\[
-\hat{y} = \sigma^{\text{out}}(\mathbf{W}^{(\text{out})}\mathbf{a}^{(1)} + \mathbf{b}^{(\text{out})}),
-\]</span> where we have an output-specific: activation function, weight matrix, and bias vector.</p>
-<p>The flow described for an observation displays the idea of FFNN;</p>
-<blockquote class="blockquote">
-<p>learn a feature transformation, then fit the final prediction rule in that learned feature space.</p>
-</blockquote>
-<p>The idea that remains slightly elusive is that of letting the neural network learn the transformation. This is a powerful feature which We will cover later on.</p>
-</section>
-<section id="continuing-xor" class="level3" data-number="3.1.2">
-<h3 data-number="3.1.2" class="anchored" data-anchor-id="continuing-xor"><span class="header-section-number">3.1.2</span> Continuing XOR</h3>
-<p>The XOR example lets us make the feature-map idea concrete. In the SVM view, we would search for, or implicitly choose, a transformation <span class="math inline">\(\phi(\mathbf{x})\)</span> so that a linear score separates the classes in the transformed space. In the MLP view, the hidden layer can play the same role.</p>
-<p>For example, take <span class="math inline">\(\mathbf{x} = [x_1, x_2]^\top\)</span> and define a hidden layer with four ReLU units:</p>
-<p><span class="math display">\[
-\mathbf{a}^{(1)}
-=
-\operatorname{ReLU}\left(W^{(1)}\mathbf{x} + \mathbf{b}^{(1)}\right),
-\qquad
-W^{(1)}
-=
-\begin{bmatrix}
-1 &amp; 1\\
--1 &amp; -1\\
-1 &amp; -1\\
--1 &amp; 1
-\end{bmatrix},
-\qquad
-\mathbf{b}^{(1)}
-=
-\begin{bmatrix}
-0\\
-0\\
-0\\
-0
-\end{bmatrix}.
-\]</span></p>
-<p>This gives the hidden activations</p>
-<p><span class="math display">\[
-\begin{aligned}
-a_1 &amp;= \operatorname{ReLU}(x_1 + x_2) = \max(0, x_1+x_2),\\
-a_2 &amp;= \operatorname{ReLU}(-x_1 - x_2) = \max(0, -x_1-x_2),\\
-a_3 &amp;= \operatorname{ReLU}(x_1 - x_2) = \max(0, x_1-x_2),\\
-a_4 &amp;= \operatorname{ReLU}(-x_1 + x_2)= \max(0, -x_1+x_2).
-\end{aligned}
-\]</span></p>
-<p>These four values are the transformed features. That is, we can think of a transformed feature space</p>
-<p><span class="math display">\[
-\phi(\mathbf{x})
-=
-\mathbf{a}^{(1)}
-=
-\begin{bmatrix}
-a_1\\
-a_2\\
-a_3\\
-a_4
-\end{bmatrix}.
-\]</span></p>
-<p>The output layer can then fit a linear score in this hidden feature space:</p>
-<p><span class="math display">\[
-s
-=
-\begin{bmatrix}
-1 &amp; 1 &amp; -1 &amp; -1
-\end{bmatrix}
-\mathbf{a}^{(1)}
-+ 0
-=
-a_1 + a_2 - a_3 - a_4.
-\]</span></p>
-<p>Classifying with a step function on whether <span class="math inline">\(s\)</span> is positive or negative gives a nonlinear boundary in the original <span class="math inline">\([x_1, x_2]\)</span> space. Since <span class="math inline">\(a_1+a_2 = |x_1+x_2|\)</span> and <span class="math inline">\(a_3+a_4 = |x_1-x_2|\)</span>, the score is positive when the two inputs have the same sign and negative when they have opposite signs. Therefore, the hidden layer has changed what the predictors are to the output layer, allowing a linear boundary on these hidden nodes.</p>
-<div class="cell">
-<div class="cell-output-display">
-<div id="fig-xor-single-hidden-layer" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-xor-single-hidden-layer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="02-multilayer-perceptrons_files/figure-html/fig-xor-single-hidden-layer-1.png" class="img-fluid figure-img" width="672">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-xor-single-hidden-layer-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3.2: The hidden layer builds four transformed features, and the output layer uses a linear score to separate the XOR pattern.
-</figcaption>
-</figure>
-</div>
-</div>
-</div>
-<p>Note that, this is still a manual example. It illustrates what an MLP structure can represent, not necessarily how the weights and biases are found. In reality, we fit a neural network whereby: <span class="math inline">\(\mathbf{W}^{(1)}\)</span>, <span class="math inline">\(\mathbf{b}^{(1)}\)</span>, <span class="math inline">\(\mathbf{W}^{(\text{out})}\)</span>, and <span class="math inline">\(\mathbf{b}^{(\text{out})}\)</span> are estimated from data.</p>
-<blockquote class="blockquote">
-<p>The learning problem is therefore different from the SVM feature-map problem: instead of choosing <span class="math inline">\(\phi\)</span> before fitting the decision rule, the network tries to learn a useful <span class="math inline">\(\phi\)</span> while learning the decision rule.</p>
-</blockquote>
-<section id="learning-the-feature-transformation" class="level4" data-number="3.1.2.1">
-<h4 data-number="3.1.2.1" class="anchored" data-anchor-id="learning-the-feature-transformation"><span class="header-section-number">3.1.2.1</span> Learning the feature transformation</h4>
-<p>Unlike SVMs, we do not manually choose to introduce the predictors <span class="math inline">\(x_1^2\)</span>, <span class="math inline">\(x_1x_2\)</span>, or other transformations; in fact, we have little oversight on the transformation function <span class="math inline">\(\phi\)</span>. The network adjusts the hidden-layer weights and biases so that the resulting activations become useful for the prediction task, learning how to represent the inputs which improved the performance of the model. However, this representation depends on many factors such as model size, activation functions, optimisation, starting weights, and the information present in the data.</p>
-</section>
-</section>
-<section id="adding-more-layers" class="level3" data-number="3.1.3">
-<h3 data-number="3.1.3" class="anchored" data-anchor-id="adding-more-layers"><span class="header-section-number">3.1.3</span> Adding More Layers</h3>
-<p>Once we have one hidden layer, adding more layers extends the same idea. The output of one hidden layer becomes the input to the next hidden layer:</p>
-<p><span class="math display">\[
-\mathbf{x}
-\mapsto
-\mathbf{a}^{(1)}
-\mapsto
-\mathbf{a}^{(2)}
-\mapsto
-\cdots
-\mapsto
-\hat{y}.
-\]</span></p>
-<p>This is why an MLP is not just a collection of unrelated perceptrons. It is a sequence of feature transformations. The first hidden layer constructs features from the original predictors. The next hidden layer constructs features from those features, and so on. Additional layers can make a network more flexible, but they also make optimisation harder. We will return to optimisation as a whole when we discuss gradient descent and backpropagation.</p>
-</section>
-</section>
-<section id="choosing-the-output-layer" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="choosing-the-output-layer"><span class="header-section-number">3.2</span> Choosing The Output Layer</h2>
-<p>Once the hidden layers have created the final representation, the output layer decides how that representation should be interpreted. If we denote the final hidden output as <span class="math inline">\(\mathbf{a}^{(L)}\)</span>, then a single output node starts with the familiar weighted sum</p>
-<p><span class="math display">\[
-z^{(\text{out})}
-=
-\mathbf{W}^{(\text{out})}\cdot \mathbf{a}^{(L)}
-+
-b^{(\text{out})}.
-\]</span></p>
-<p>The task then determines the output activation. For regression with one numeric response, it is common to use a linear activation:</p>
-<p><span class="math display">\[
+w_{jm}^{(1)}
+\rightarrow
+z_m^{(1)}
+\rightarrow
+a_m^{(1)}
+\rightarrow
 \hat{y}
-=
-z^{(\text{out})}.
+\rightarrow
+J.
 \]</span></p>
-<p>In this case, the output layer is fitting a linear regression model on the learned features <span class="math inline">\(\mathbf{a}^{(L)}\)</span>. The difference from ordinary linear regression is that the features themselves have been created by the hidden layers. This output is usually paired with a squared-error loss.</p>
-<p>For binary classification, one output unit with a sigmoid activation is common:</p>
-<p><span class="math display">\[
-\hat{p}
-=
-\frac{1}{1 + \exp\left(-z^{(\text{out})}\right)}.
-\]</span></p>
-<p>Here, the output layer is fitting the logistic-regression form on the learned features <span class="math inline">\(\mathbf{a}^{(L)}\)</span>. The sigmoid converts the score into an estimated probability, and the model is usually fitted with binary cross-entropy.</p>
-<p>For multiclass classification with <span class="math inline">\(K\)</span> classes, we use one output score per class:</p>
-<p><span class="math display">\[
-z_k^{(\text{out})}
-=
-\mathbf{w}_k^{(\text{out})}\cdot \mathbf{a}^{(L)}
-+
-b_k^{(\text{out})},
-\qquad
-k = 1,\ldots,K.
-\]</span></p>
-<p>The softmax activation then converts these scores into class probabilities:</p>
-<p><span class="math display">\[
-\hat{p}_k =
-\frac{\exp\left(z_k^{(\text{out})}\right)}
-{\sum_{\ell=1}^K \exp\left(z_\ell^{(\text{out})}\right)}.
-\]</span></p>
-<p>The prediction is the class with the largest estimated probability, and the usual loss is multiclass cross-entropy.</p>
-<p>The common idea across these cases is that the hidden layers learn the feature space, while the output layer chooses the prediction / decision rule that aims to match the response.</p>
-<p>Therefore, a multilayer perceptron or feed-forward neural network separates the problem into two chronological steps:</p>
-<ol type="1">
-<li>hidden layers transform the predictors into a learned feature space</li>
-<li>the output layer fits the prediction rule in that feature space</li>
-</ol>
-<p>This is why neural networks are often described as flexible function approximators. They are not just fitting one boundary in the original predictor space. They are learning a feature transformation that makes the final prediction easier for the output layer. Each node and each layer combine to learn important features about the original predictors. In fact, this leads us into the main theorem for neural networks.</p>
+<p>The chain rule multiplies the local rates of change along this path. Backpropagation is just an organised way to reuse these local derivatives efficiently.</p>
+</div>
+</div>
+</div>
 </section>
-<section id="the-universal-approximation-theorem" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="the-universal-approximation-theorem"><span class="header-section-number">3.3</span> The Universal Approximation Theorem</h2>
-<p>The following theorem ensures that a neural network structure can <em>learn</em>. Obviously, there is a very formal statement of this theorem by Hornik (1991), but we will paraphrase.</p>
-<blockquote class="blockquote">
-<p>A neural network with at least one hidden layer and a suitable nonlinear activation function can approximate any continuous function on a closed, bounded domain to an arbitrary preceision, provided that the hidden layer has enough nodes.</p>
-</blockquote>
-<p>Suppose that we have a predictor space <span class="math inline">\(\mathbf{X} \in \mathbb{R}^p\)</span> and an associated response variable <span class="math inline">\(\mathbf{Y}\)</span>. By linking the two, we are essentially assuming that there exists some function</p>
-<p><span class="math display">\[
-f: K \rightarrow \mathbb{R}, \qquad K \subset \mathbb{R}^p \;\; \text{ compact},
-\]</span> such that</p>
-<p><span class="math display">\[
-Y = f(X) + \epsilon.
-\]</span></p>
-<p>Here, <span class="math inline">\(\epsilon\)</span> represents the statistical noise.</p>
-<p>The <em>Universal Approximation Theorem</em> says that a neural network with only one hidden layer can approximate that function <span class="math inline">\(f\)</span> as long as that layer has enough nodes.</p>
-<p>This links directly to the feature space transformation idea above. The hidden layer builds nonlinear transformations of <span class="math inline">\(\mathbf{x}\)</span>, and the output layer combines these transformed features. By combining enough simple nonlinear units, the network can represent any continuous function which links the predictors and the response.</p>
-<p>That said, the theorem does not guarantee that a fitted neural network will perform well. It says that a suitable network <em>exists</em> without ensuring that the optimisation will always find such a network. Therefore, the theorem gives us confidence in the flexibility of neural networks, but it does not remove the modelling work. We still need to choose an architecture, fit the weights, tune the model, and check performance on out-of-sample data.</p>
-<blockquote class="blockquote">
-<p>Clearly, the next question is: <em>given a model architecture, how the weights are optimised?</em></p>
-</blockquote>
+<section id="general-backpropagation" class="level3" data-number="5.1.3">
+<h3 data-number="5.1.3" class="anchored" data-anchor-id="general-backpropagation"><span class="header-section-number">5.1.3</span> General Backpropagation</h3>
+<p>For classification and general neural network models, the choice of the loss and activation functions can change. Note that none of the above was specific to the model structure or loss function besides the actual derivatives. The process of backpropagation does not change at all, simply the derivatives we calculate.</p>
+<p>For binary classification, sigmoid output with cross-entropy loss is common. For multiclass classification, softmax output with cross-entropy loss is common. Whilst a variety of activation function and loss functions could be chosen, there is benefit in keeping them differentiable so that the chain rule breakdown can be preserved.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -1127,13 +965,13 @@ Y = f(X) + \epsilon.
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./01-neurons.html" class="pagination-link" aria-label="The Basic Building Block">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">The Basic Building Block</span></span>
+      <a href="./03-gradient-descent.html" class="pagination-link" aria-label="Training By Gradient Descent">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Training By Gradient Descent</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./03-gradient-descent.html" class="pagination-link" aria-label="Training By Gradient Descent">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Training By Gradient Descent</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./05-regularisation.html" class="pagination-link" aria-label="Networking">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Networking</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

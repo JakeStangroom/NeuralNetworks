@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Appendix A — Some Mathematical Support – Neural Networks</title>
+<title>Appendix A — Some Mathematical Support – Introduction to Neural Networks</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -33,7 +33,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./03-gradient-descent.html" rel="prev">
+<link href="./05-regularisation.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -294,7 +294,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Neural Networks</a> 
+      <a href="./">Introduction to Neural Networks</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -331,6 +331,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Training By Gradient Descent</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-backpropagation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Backpropagation</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-regularisation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Networking</span></span></a>
+  </div>
+</li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
@@ -361,7 +373,6 @@ window.Quarto = {
   <li><a href="#matrix-notation-for-one-layer" id="toc-matrix-notation-for-one-layer" class="nav-link active" data-scroll-target="#matrix-notation-for-one-layer"><span class="header-section-number">A.1</span> Matrix Notation For One Layer</a></li>
   <li><a href="#activation-function-formulas" id="toc-activation-function-formulas" class="nav-link" data-scroll-target="#activation-function-formulas"><span class="header-section-number">A.2</span> Activation Function Formulas</a></li>
   <li><a href="#a-backpropagation-derivative" id="toc-a-backpropagation-derivative" class="nav-link" data-scroll-target="#a-backpropagation-derivative"><span class="header-section-number">A.3</span> A Backpropagation Derivative</a></li>
-  <li><a href="#softmax-and-cross-entropy" id="toc-softmax-and-cross-entropy" class="nav-link" data-scroll-target="#softmax-and-cross-entropy"><span class="header-section-number">A.4</span> Softmax And Cross-Entropy</a></li>
   </ul>
 </nav>
     </div>
@@ -410,9 +421,9 @@ W^{(k)}\mathbf{a}^{(k)}
 <p><span class="math display">\[
 \mathbf{a}^{(k+1)}
 =
-\phi\left(\mathbf{z}^{(k+1)}\right),
+\sigma\left(\mathbf{z}^{(k+1)}\right),
 \]</span></p>
-<p>where <span class="math inline">\(\phi\)</span> is applied elementwise.</p>
+<p>where <span class="math inline">\(\sigma\)</span> is applied elementwise.</p>
 <p>For the input layer,</p>
 <p><span class="math display">\[
 \mathbf{a}^{(0)} = \mathbf{x}.
@@ -458,7 +469,7 @@ z_m^{(1)}
 \mathbf{w}_m^{(1)}\cdot\mathbf{x} + b_m^{(1)},
 \]</span></p>
 <p><span class="math display">\[
-a_m^{(1)} = \phi(z_m^{(1)}),
+a_m^{(1)} = \sigma(z_m^{(1)}),
 \]</span></p>
 <p>and</p>
 <p><span class="math display">\[
@@ -518,7 +529,7 @@ w_m^{(2)},
 <p><span class="math display">\[
 \frac{\partial a_m^{(1)}}{\partial z_m^{(1)}}
 =
-\phi'(z_m^{(1)}),
+\sigma'(z_m^{(1)}),
 \]</span></p>
 <p>and</p>
 <p><span class="math display">\[
@@ -532,29 +543,10 @@ x_j.
 =
 (\hat{y}-y)
 w_m^{(2)}
-\phi'(z_m^{(1)})
+\sigma'(z_m^{(1)})
 x_j.
 \]</span></p>
 <p>This is the basic hidden-layer backpropagation update for the one-output regression case.</p>
-</section>
-<section id="softmax-and-cross-entropy" class="level2" data-number="A.4">
-<h2 data-number="A.4" class="anchored" data-anchor-id="softmax-and-cross-entropy"><span class="header-section-number">A.4</span> Softmax And Cross-Entropy</h2>
-<p>For multiclass classification, the softmax output for class <span class="math inline">\(k\)</span> is</p>
-<p><span class="math display">\[
-\hat{p}_k
-=
-\frac{\exp(z_k)}
-{\sum_{\ell=1}^K \exp(z_\ell)}.
-\]</span></p>
-<p>If <span class="math inline">\(y_k\)</span> is an indicator for whether the observation belongs to class <span class="math inline">\(k\)</span>, the cross-entropy loss is</p>
-<p><span class="math display">\[
-C
-=
--
-\sum_{k=1}^K
-y_k \log(\hat{p}_k).
-\]</span></p>
-<p>This loss rewards high predicted probability for the correct class.</p>
 
 
 </section>
@@ -975,8 +967,8 @@ y_k \log(\hat{p}_k).
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./03-gradient-descent.html" class="pagination-link" aria-label="Training By Gradient Descent">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Training By Gradient Descent</span></span>
+      <a href="./05-regularisation.html" class="pagination-link" aria-label="Networking">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Networking</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
